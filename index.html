@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MT5 Scalping Engine — Interactive Roadmap (Dark, v1.4.1)</title>
+<meta name="description" content="Dark, single-file, rich UI roadmap with live BTC/ETH sparklines, health gauges, clear 6-week timeline with progress, interactive effort split, and print-to-PDF export."/>
+<style>
+  :root{
+    --bg:#0b0e14; --text:#eaf1ff; --muted:#9cb0c8; --card:#0f1422; --ink:#eef2ff;
+    --accent:#8b7bff; --accent2:#21d4ef; --accent3:#10b981; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+    --ring: rgba(139,123,255,0.35);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:radial-gradient(1200px 800px at 70% -10%,rgba(33,212,239,0.12),transparent 60%),linear-gradient(0deg,rgba(255,138,101,0.08),rgba(139,123,255,0.06)),var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;letter-spacing:.2px}
+  .wrap{max-width:1200px;margin:36px auto;padding:0 20px}
+  h1{font-size:32px;margin:0 0 6px 0;letter-spacing:.3px}
+  .sub{color:var(--muted);font-size:14px}
+
+  /* Layout */
+  .row{display:grid;gap:16px;align-items:start}
+  .row.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .row.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media (max-width: 960px){ .row.cols-3,.row.cols-2{grid-template-columns:1fr} }
+
+  .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.00)),var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;position:relative;overflow:hidden}
+  .card.glow{box-shadow:0 0 0 1px rgba(255,255,255,0.05),0 0 40px var(--ring)}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 22px}
+  .chip{border:1px solid rgba(255,255,255,0.14);border-radius:999px;padding:8px 12px;font-size:12px;color:var(--ink);display:inline-flex;gap:8px;align-items:center;backdrop-filter: blur(6px)}
+  .btn{cursor:pointer;user-select:none}
+  .btn.primary{background:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.01));border-color:rgba(255,255,255,0.18)}
+  .btn:hover{border-color:rgba(255,255,255,0.35)}
+  .btn:active{transform:translateY(1px)}
+  .sp{flex:1}
+  .tag{font-size:11px;color:var(--muted)}
+
+  /* Gauges */
+  .gstack{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center}
+  .gauge{width:120px;height:120px}
+  .gtitle{font-size:13px;color:var(--muted);margin-bottom:6px}
+  .gnum{font-weight:700;font-size:22px}
+
+  /* Table */
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px dashed rgba(255,255,255,0.08);padding:10px 6px;font-size:13px;vertical-align:top}
+  th{color:var(--muted);font-weight:600;text-align:left}
+  .status{font-weight:700}
+  .status.ok{color:var(--ok)}
+  .status.good{color:var(--accent2)}
+  .status.warn{color:var(--warn)}
+  .status.bad{color:var(--bad)}
+
+  /* Sparklines */
+  .spark{height:60px;width:100%;display:block}
+  .spark-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width: 720px){ .spark-row{grid-template-columns:1fr} }
+  .label{color:var(--muted);font-size:12px}
+  .price{font-weight:700}
+  .trend.up{color:var(--ok)}
+  .trend.down{color:var(--bad)}
+
+  /* Timeline */
+  .timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .tl-card{border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:12px;background:rgba(255,255,255,0.02);display:grid;gap:8px;min-height:140px;transition:transform .2s ease,border-color .2s ease}
+  .tl-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,0.24)}
+  .tl-head{display:flex;align-items:center;justify-content:space-between}
+  .tl-week{font-weight:700}
+  .badge{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.16);display:inline-flex;gap:6px;align-items:center}
+  .b-done{color:var(--ok);border-color:rgba(34,197,94,0.35)}
+  .b-ip{color:var(--accent2);border-color:rgba(33,212,239,0.35)}
+  .b-q{color:var(--muted)}
+  .tl-title{font-size:13px;color:var(--ink)}
+  .tl-desc{font-size:12px;color:var(--muted)}
+  .tl-progress{height:8px;background:#2a3346;border-radius:999px;overflow:hidden}
+  .tl-bar{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0}
+  .ico{width:12px;height:12px;display:inline-block;border-radius:50%}
+
+  /* Flow */
+  .flow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .flow .node{padding:10px 12px;border:1px solid rgba(255,255,255,0.12);border-radius:12px;background:rgba(255,255,255,0.02)}
+  .flow .arrow{width:18px;height:1px;background:linear-gradient(90deg,transparent,var(--accent2))}
+  .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  @media (max-width: 960px){ .grid-3{grid-template-columns:1fr} }
+  .kv h4{margin:0 0 8px 0;font-size:13px;color:var(--muted)}
+  .kv p{margin:0;font-size:13px;color:var(--ink)}
+
+  /* Effort Split */
+  .effort-wrap{display:grid;grid-template-columns: 320px 1fr;gap:18px;align-items:center}
+  @media (max-width: 720px){ .effort-wrap{grid-template-columns:1fr} }
+  .donut{width:300px;height:300px;margin:auto;display:block; cursor:default; }
+  .donut .slice{ cursor:pointer; transition: opacity .15s ease, transform .15s ease; }
+  .legend{font-size:13px}
+  .legend tr td:first-child{width:14px}
+  .legend .sw{display:inline-block;width:10px;height:10px;border-radius:2px}
+  .legend td{padding:6px}
+  .legend tr[data-row]{ cursor:pointer; transition: background-color .15s ease; }
+  .legend tr[data-row].active{ background: rgba(255,255,255,0.06); }
+  .info{font-size:12px;color:var(--muted)}
+
+  @media print{ .toolbar{display:none} .card{box-shadow:none} body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>MT5 Scalping Engine — Interactive Roadmap</h1>
+    <div class="sub">Exness Pro Tuned • BTCUSD • ETHUSD</div>
+
+    <div class="toolbar">
+      <div class="chip btn primary" id="btnPrint">Export PDF</div>
+      <div class="chip btn" id="btnGlow">Toggle Glow</div>
+      <div class="chip">Target: v1.0 in 6 weeks</div>
+      <div class="chip">Governance: freezes & rollback</div>
+      <div class="sp"></div>
+    </div>
+
+    <!-- Health at a Glance -->
+    <div class="row cols-3">
+      <div class="card">
+        <div class="gtitle">Win-rate vs Threshold</div>
+        <div class="gstack">
+          <svg class="gauge" viewBox="0 0 120 120" id="gWin"></svg>
+          <div>
+            <div class="gnum"><span id="winVal">68.2</span></div>
+            <div class="label">Win%: <span id="winLbl">68.2</span> • Threshold τ: <span id="tauLbl">58.0</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="gtitle">Order Quality (Reject%)</div>
+        <div class="gstack">
+          <svg class="gauge" viewBox="0 0 120 120" id="gRej"></svg>
+          <div>
+            <div class="gnum"><span id="rejVal">14.8</span></div>
+            <div class="label">Current: <span id="rejLbl">14.8%</span> • Targets: ≤20/≤15/≤30</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="gtitle">Drawdown (R)</div>
+        <div class="gstack">
+          <svg class="gauge" viewBox="0 0 120 120" id="gDD"></svg>
+          <div>
+            <div class="gnum"><span id="ddVal">6.3</span></div>
+            <div class="label">Current: <span id="ddLbl">6.3R</span> • Cap: 8R / 200 trades</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <table>
+        <thead><tr><th>Metric</th><th>Current</th><th>Target</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Win-rate</td><td id="tWinC">68.2%</td><td>58.0%</td><td class="status ok" id="tWinS">On track</td></tr>
+          <tr><td>Reject%</td><td id="tRejC">14.8%</td><td>≤20/≤15/≤30</td><td class="status ok" id="tRejS">Great</td></tr>
+          <tr><td>Drawdown (R)</td><td id="tDDC">6.3</td><td>≤8</td><td class="status ok" id="tDDS">Safe</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Live Market Sparklines + Timeline -->
+    <div class="row cols-2" style="margin-top:16px">
+      <div class="card">
+        <div class="kpi"><div class="badge b-ip"><span class="ico" style="background:#22c55e"></span> Live</div><div class="sp"></div><div class="tag">BTC/ETH via Binance (1m)</div></div>
+        <div class="spark-row">
+          <div>
+            <div class="label">BTCUSD <span class="trend" id="btcTrend">Trend: —</span></div>
+            <canvas id="btcSpark" class="spark"></canvas>
+            <div class="price" id="btcLast">Last: —</div>
+          </div>
+          <div>
+            <div class="label">ETHUSD <span class="trend" id="ethTrend">Trend: —</span></div>
+            <canvas id="ethSpark" class="spark"></canvas>
+            <div class="price" id="ethLast">Last: —</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="gtitle">6-Week Roadmap — Clear Timeline</div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </div>
+
+    <!-- Flow -->
+    <div class="card" style="margin-top:16px">
+      <div class="gtitle">How It Comes Together</div>
+      <div class="flow">
+        <div class="node" title="Multi-TF stack, microprice, σ-readiness, regime locks.">Signals</div>
+        <div class="arrow"></div>
+        <div class="node" title="Cost-aware τ; online Platt calibration; EV gating.">Decision τ</div>
+        <div class="arrow"></div>
+        <div class="node" title="Policy auto-select; slippage EWMA; spread floors.">Order IOC/FOK</div>
+        <div class="arrow"></div>
+        <div class="node" title="Guard rails enforced before entry & while open.">Guardrails</div>
+        <div class="arrow"></div>
+        <div class="node" title="1-pos per symbol; risk units; cooldowns; BE/trailing.">Position</div>
+        <div class="arrow"></div>
+        <div class="node" title="ATR-snapped TP/SL; hazard stop & timeout.">Exit TP/SL</div>
+        <div class="arrow"></div>
+        <div class="node" title="Drift, calibration, EWMA slip feedback.">Feedback</div>
+      </div>
+
+      <div class="grid-3" style="margin-top:14px">
+        <div class="kv"><h4>Signals</h4><p>Multi-TF stack, microprice, σ-readiness, regime locks.</p></div>
+        <div class="kv"><h4>Decision τ</h4><p>Cost-aware τ; online Platt calibration; EV gating.</p></div>
+        <div class="kv"><h4>Order IOC/FOK</h4><p>Auto policy; slip EWMA; spread floors; parity checks.</p></div>
+        <div class="kv"><h4>Position</h4><p>1-position per symbol; risk units; cooldowns; BE/trailing.</p></div>
+        <div class="kv"><h4>Exit TP/SL</h4><p>ATR-snapped TP/SL; hazard stop & timeout; audit.</p></div>
+        <div class="kv"><h4>Feedback</h4><p>Drift, calibration, slippage EWMA; model registry.</p></div>
+      </div>
+    </div>
+
+    <!-- Effort Split -->
+    <div class="card" style="margin-top:16px">
+      <div class="gtitle">Effort Split</div>
+      <div class="effort-wrap">
+        <svg class="donut" viewBox="0 0 120 120" id="donut" aria-label="Effort distribution donut"></svg>
+        <div>
+          <table class="legend" id="legend" aria-label="Effort distribution legend"></table>
+          <div class="info">Owners & % are editable in code constants; totals must sum to 100%.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs & Safeguards -->
+    <div class="row cols-2" style="margin-top:16px">
+      <div class="card">
+        <div class="gtitle">Milestones & KPIs</div>
+        <table>
+          <thead><tr><th>Milestone</th><th>Definition of Done</th><th>Gate</th></tr></thead>
+          <tbody>
+            <tr><td>Win-rate ≥ τ in ≥3/4 bins</td><td>Bin-wise win% ≥ τ on 300+ trades</td><td>Non-negotiable</td></tr>
+            <tr><td>Expectancy ≥ 0 after costs</td><td>Spread×2, slip EWMA, fees included</td><td>Non-negotiable</td></tr>
+            <tr><td>Reject bands</td><td>≤20% breakout / ≤15% pullback / ≤30% fade</td><td>Quality</td></tr>
+            <tr><td>Drawdown cap</td><td>≤ 8R over rolling 200 trades</td><td>Risk</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="gtitle">Safeguards</div>
+        <table>
+          <thead><tr><th>Control</th><th>Description</th><th>Window</th></tr></thead>
+          <tbody>
+            <tr><td>Config freezes</td><td>W1/W2/W6 freeze post-signoff</td><td>W1, W2, W6</td></tr>
+            <tr><td>Golden tests</td><td>CI non-regression on fills & PnL</td><td>Daily</td></tr>
+            <tr><td>Immutable artifacts</td><td>Model card, registry, rollback plan</td><td>Per release</td></tr>
+            <tr><td>Drift checks</td><td>τ-bins, slippage, reject taxonomy</td><td>Daily</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tag" style="margin-top:20px">© MT5 Scalping Engine — Dark interactive roadmap v1.4.1 • Aligned layout • Clear timeline with progress • Live BTC/ETH sparklines</div>
+  </div>
+
+<script>
+// ======= CONFIG (enhanced) =======
+const HEALTH = { win: 68.2, tau: 58.0, reject: 14.8, dd: 6.3, ddCap: 8.0 };
+const TIMELINE = [
+  {w:1, title:'Plan & Foundations', status:'done', desc:'Scope lock, tests, draft manual.', progress:100},
+  {w:2, title:'Learn from Data', status:'done', desc:'Backtests, τ thresholds, presets.', progress:100},
+  {w:3, title:'Connect & Simulate', status:'done', desc:'Orders, guardrails, broker parity.', progress:100},
+  {w:4, title:'Demo 24/5', status:'ip', desc:'Dashboards, alerts, drift checks.', progress:65},
+  {w:5, title:'Canary Live', status:'queued', desc:'BTC tiny risk, rollback hooks.', progress:0},
+  {w:6, title:'Ramp & Release', status:'queued', desc:'Add ETH, freeze v1.0, release runbook.', progress:0},
+];
+const EFFORT = [
+  {name:'Engine & Research', owner:'Quant/Research', pct:32},
+  {name:'Execution & Risk', owner:'Trading/Dev', pct:24},
+  {name:'Tooling & Monitoring', owner:'Platform', pct:20},
+  {name:'Docs & Website', owner:'Tech Writer', pct:12},
+  {name:'Release & Governance', owner:'PM/Ops', pct:12},
+];
+const BINANCE_ENDPOINT = 'https://api.binance.com/api/v3/klines';
+const SPARK_POINTS = 120; const REFRESH_MS = 20_000;
+
+// ======= UTIL =======
+const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
+function statusForWin(win,tau){return win>=tau?{t:'On track',cls:'ok'}:{t:'Below τ',cls:'bad'};}
+function statusForReject(r){if(r<=15)return{t:'Great',cls:'ok'};if(r<=20)return{t:'Good',cls:'good'};if(r<=30)return{t:'Caution',cls:'warn'};return{t:'High',cls:'bad'};}
+function statusForDD(dd,cap){if(dd<=cap*0.5)return{t:'Safe',cls:'ok'};if(dd<=cap*0.8)return{t:'Watch',cls:'warn'};return{t:'At risk',cls:'bad'};}
+
+// ======= GAUGES =======
+function drawGauge(el,val,min,max,thresholds){
+  const svg = el; svg.innerHTML='';
+  const cx=60, cy=60, r=48, start= -Math.PI*3/4, end = Math.PI*3/4;
+  function arc(frac){ const a = start + frac*(end-start); const x = cx + r*Math.cos(a), y = cy + r*Math.sin(a); const large = frac>0.5?1:0; return `M ${cx-r} ${cy} A ${r} ${r} 0 ${large} 1 ${x} ${y}`; }
+  const bg = document.createElementNS('http://www.w3.org/2000/svg','path');
+  bg.setAttribute('d', arc(1)); bg.setAttribute('stroke','rgba(255,255,255,0.18)'); bg.setAttribute('stroke-width','10'); bg.setAttribute('fill','none'); svg.appendChild(bg);
+  const frac = clamp((val-min)/(max-min),0,1);
+  const fg = document.createElementNS('http://www.w3.org/2000/svg','path');
+  fg.setAttribute('d', arc(frac)); fg.setAttribute('stroke','url(#grad)'); fg.setAttribute('stroke-width','10'); fg.setAttribute('fill','none'); fg.setAttribute('stroke-linecap','round'); svg.appendChild(fg);
+  (thresholds||[]).forEach(t=>{ const f=clamp((t-min)/(max-min),0,1); const a = start + f*(end-start), x1=cx+(r+2)*Math.cos(a), y1=cy+(r+2)*Math.sin(a), x2=cx+(r+10)*Math.cos(a), y2=cy+(r+10)*Math.sin(a); const tick=document.createElementNS('http://www.w3.org/2000/svg','line'); tick.setAttribute('x1',x1); tick.setAttribute('y1',y1); tick.setAttribute('x2',x2); tick.setAttribute('y2',y2); tick.setAttribute('stroke','rgba(255,255,255,0.35)'); tick.setAttribute('stroke-width','2'); svg.appendChild(tick); });
+  const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+  txt.setAttribute('x',cx); txt.setAttribute('y',cy+6); txt.setAttribute('text-anchor','middle'); txt.setAttribute('font-size','16'); txt.setAttribute('fill','var(--ink)'); txt.textContent=val.toFixed(1); svg.appendChild(txt);
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML=`<linearGradient id="grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="var(--accent2)"/><stop offset="100%" stop-color="var(--accent)"/></linearGradient>`; svg.prepend(defs);
+}
+
+function renderHealth(){
+  drawGauge(document.getElementById('gWin'), HEALTH.win, 0, 100, [HEALTH.tau]);
+  drawGauge(document.getElementById('gRej'), 100-HEALTH.reject, 0, 100, [100-20,100-15,100-30]);
+  drawGauge(document.getElementById('gDD'), HEALTH.ddCap-HEALTH.dd, 0, HEALTH.ddCap, [HEALTH.ddCap*0.5, HEALTH.ddCap*0.8]);
+  document.getElementById('winVal').textContent=HEALTH.win.toFixed(1);
+  document.getElementById('winLbl').textContent=HEALTH.win.toFixed(1);
+  document.getElementById('tauLbl').textContent=HEALTH.tau.toFixed(1);
+  document.getElementById('rejVal').textContent=HEALTH.reject.toFixed(1);
+  document.getElementById('rejLbl').textContent=`${HEALTH.reject.toFixed(1)}%`;
+  document.getElementById('ddVal').textContent=HEALTH.dd.toFixed(1);
+  document.getElementById('ddLbl').textContent=`${HEALTH.dd.toFixed(1)}R`;
+  const w = statusForWin(HEALTH.win, HEALTH.tau); const r = statusForReject(HEALTH.reject); const d = statusForDD(HEALTH.dd, HEALTH.ddCap);
+  document.getElementById('tWinC').textContent=`${HEALTH.win.toFixed(1)}%`; const tws=document.getElementById('tWinS'); tws.textContent=w.t; tws.className=`status ${w.cls}`;
+  document.getElementById('tRejC').textContent=`${HEALTH.reject.toFixed(1)}%`; const trs=document.getElementById('tRejS'); trs.textContent=r.t==='Great'?'Great':r.t; trs.className=`status ${r.cls}`;
+  document.getElementById('tDDC').textContent=`${HEALTH.dd.toFixed(1)}`; const tds=document.getElementById('tDDS'); tds.textContent=d.t; tds.className=`status ${d.cls}`;
+}
+
+// ======= TIMELINE =======
+function renderTimeline(){
+  const host=document.getElementById('timeline'); host.innerHTML='';
+  TIMELINE.forEach(item=>{
+    const card=document.createElement('div'); card.className='tl-card';
+    const head=document.createElement('div'); head.className='tl-head';
+      const wk=document.createElement('div'); wk.className='tl-week'; wk.textContent=`Week ${item.w}`;
+      const status=document.createElement('div'); status.className='badge ' + (item.status==='done'?'b-done':item.status==='ip'?'b-ip':'b-q');
+        const dot=document.createElement('span'); dot.className='ico'; dot.style.background=(item.status==='done'? '#22c55e' : item.status==='ip' ? '#21d4ef' : '#9cb0c8');
+        const sTxt=document.createElement('span'); sTxt.textContent=(item.status==='done'?'Done':item.status==='ip'?'In Progress':'Queued');
+        status.appendChild(dot); status.appendChild(sTxt);
+      head.appendChild(wk); head.appendChild(status);
+    const title=document.createElement('div'); title.className='tl-title'; title.textContent=item.title;
+    const desc=document.createElement('div'); desc.className='tl-desc'; desc.textContent=item.desc;
+    card.appendChild(head); card.appendChild(title); card.appendChild(desc);
+    if(item.progress>0){
+      const pr=document.createElement('div'); pr.className='tl-progress';
+      const bar=document.createElement('div'); bar.className='tl-bar'; bar.style.width=item.progress+'%'; pr.appendChild(bar); card.appendChild(pr);
+    }
+    host.appendChild(card);
+  });
+}
+
+// ======= SPARKLINES =======
+function drawSpark(canvas, data){
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width=canvas.clientWidth*devicePixelRatio, h=canvas.height=canvas.clientHeight*devicePixelRatio;
+  ctx.clearRect(0,0,w,h);
+  const min=Math.min(...data), max=Math.max(...data), pad=0.05*(max-min)||1; const lo=min-pad, hi=max+pad;
+  ctx.lineWidth=2*devicePixelRatio; ctx.globalAlpha=1;
+  ctx.beginPath(); data.forEach((v,i)=>{ const x=i/(data.length-1)*w; const y=h - ( (v-lo)/(hi-lo) )*h; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent2'); ctx.stroke();
+}
+async function fetchKlines(symbol){
+  const url = `${BINANCE_ENDPOINT}?symbol=${symbol}&interval=1m&limit=${SPARK_POINTS}`;
+  const res = await fetch(url); if(!res.ok) throw new Error('fetch failed');
+  const rows = await res.json();
+  const closes = rows.map(r=>Number(r[4]));
+  const last = closes[closes.length-1];
+  const trend = last >= closes[0] ? 'up' : 'down';
+  return {closes,last,trend};
+}
+async function updateSparks(){
+  try{
+    const btc = await fetchKlines('BTCUSDT');
+    drawSpark(document.getElementById('btcSpark'), btc.closes);
+    document.getElementById('btcLast').textContent = `Last: ${formatPrice(btc.last)}`;
+    document.getElementById('btcTrend').textContent = `Trend: ${btc.trend==='up'?'Up':'Down'}`;
+    document.getElementById('btcTrend').className = `trend ${btc.trend}`;
+  }catch(e){ console.warn('BTC spark error', e); }
+  try{
+    const eth = await fetchKlines('ETHUSDT');
+    drawSpark(document.getElementById('ethSpark'), eth.closes);
+    document.getElementById('ethLast').textContent = `Last: ${formatPrice(eth.last)}`;
+    document.getElementById('ethTrend').textContent = `Trend: ${eth.trend==='up'?'Up':'Down'}`;
+    document.getElementById('ethTrend').className = `trend ${eth.trend}`;
+  }catch(e){ console.warn('ETH spark error', e); }
+}
+function formatPrice(p){ if(p>100000) return p.toLocaleString(undefined,{maximumFractionDigits:1}); if(p>1000) return p.toLocaleString(undefined,{maximumFractionDigits:2}); return p.toLocaleString(undefined,{maximumFractionDigits:4}); }
+
+// ======= EFFORT DONUT (interactive) =======
+function renderDonut(){
+  const svg = document.getElementById('donut');
+  const leg = document.getElementById('legend');
+  svg.innerHTML = '';
+  leg.innerHTML = '';
+
+  const total = EFFORT.reduce((a,b)=>a+b.pct,0);
+  const cx=60, cy=60, r=44, w=24;
+  const circ = 2*Math.PI*r;
+  const colors=['#6366f1','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6'];
+
+  // Group for slices
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('transform','translate(0,0)');
+  svg.appendChild(g);
+
+  // Center labels
+  const centerTop = document.createElementNS('http://www.w3.org/2000/svg','text');
+  centerTop.setAttribute('x',cx);
+  centerTop.setAttribute('y',cy-2);
+  centerTop.setAttribute('text-anchor','middle');
+  centerTop.setAttribute('font-size','12');
+  centerTop.setAttribute('fill','var(--muted)');
+  centerTop.textContent = 'Effort split';
+  svg.appendChild(centerTop);
+
+  const centerBottom = document.createElementNS('http://www.w3.org/2000/svg','text');
+  centerBottom.setAttribute('x',cx);
+  centerBottom.setAttribute('y',cy+14);
+  centerBottom.setAttribute('text-anchor','middle');
+  centerBottom.setAttribute('font-size','16');
+  centerBottom.setAttribute('fill','var(--ink)');
+  centerBottom.setAttribute('id','donutCenter');
+  centerBottom.textContent = '100%';
+  svg.appendChild(centerBottom);
+
+  // Legend header + rows
+  leg.innerHTML = '<tr><th></th><th>Workstream</th><th>Owner</th><th>% Effort</th></tr>' +
+    EFFORT.map((it,i)=>(
+      `<tr data-row="${i}" tabindex="0" aria-label="${it.name} ${it.pct}%">
+        <td><span class="sw" style="background:${colors[i%colors.length]}"></span></td>
+        <td>${it.name}</td><td>${it.owner}</td><td>${it.pct}%</td>
+      </tr>`
+    )).join('');
+
+  // Draw slices as stroked arcs using dasharray
+  let dashOffset = 0;
+  const slices = [];
+  EFFORT.forEach((it,i)=>{
+    const frac = it.pct/total;
+    const segLen = circ*frac;
+
+    const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    ring.setAttribute('cx',cx);
+    ring.setAttribute('cy',cy);
+    ring.setAttribute('r',r);
+    ring.setAttribute('fill','none');
+    ring.setAttribute('stroke',colors[i%colors.length]);
+    ring.setAttribute('stroke-width',w);
+    ring.setAttribute('stroke-dasharray',`${segLen} ${circ-segLen}`);
+    ring.setAttribute('stroke-dashoffset',-dashOffset);
+    ring.setAttribute('class','slice');
+    ring.setAttribute('tabindex','0');
+    ring.setAttribute('role','button');
+    ring.setAttribute('aria-label',`${it.name} ${it.pct}% owned by ${it.owner}`);
+    ring.style.filter='drop-shadow(0 0 8px rgba(0,0,0,0.35))';
+    ring.dataset.index = i.toString();
+    g.appendChild(ring);
+
+    slices.push(ring);
+    dashOffset += segLen;
+  });
+
+  // Interaction state + behaviors
+  let pinned = -1;
+
+  const highlight = (idx) => {
+    slices.forEach((s,i)=>{
+      s.style.opacity = (idx<0 || i===idx) ? 1 : 0.28;
+      s.style.transform = (i===idx) ? 'scale(1.02)' : 'scale(1.0)';
+      s.style.transformOrigin = '60px 60px';
+    });
+
+    Array.from(leg.querySelectorAll('tr[data-row]')).forEach((tr,i)=>{
+      tr.classList.toggle('active', i===idx && idx!==-1);
+    });
+
+    const label = document.getElementById('donutCenter');
+    if(idx<0){
+      label.textContent = '100%';
+      centerTop.textContent = 'Effort split';
+    }else{
+      const it = EFFORT[idx];
+      label.textContent = `${it.pct}%`;
+      centerTop.textContent = it.name;
+    }
+  };
+
+  const pin = (idx) => {
+    pinned = (pinned===idx ? -1 : idx);
+    highlight(pinned);
+  };
+
+  // Slice events
+  slices.forEach(s=>{
+    const i = Number(s.dataset.index);
+    s.addEventListener('mouseenter', ()=> highlight(pinned===-1 ? i : pinned));
+    s.addEventListener('mouseleave', ()=> highlight(pinned));
+    s.addEventListener('click', ()=> pin(i));
+    s.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); pin(i); }
+      if(e.key==='Escape'){ pinned=-1; highlight(pinned); }
+      if(e.key==='ArrowRight' || e.key==='ArrowDown'){ e.preventDefault(); pin((i+1)%slices.length); }
+      if(e.key==='ArrowLeft' || e.key==='ArrowUp'){ e.preventDefault(); pin((i-1+slices.length)%slices.length); }
+    });
+  });
+
+  // Legend events
+  Array.from(leg.querySelectorAll('tr[data-row]')).forEach(tr=>{
+    const i = Number(tr.getAttribute('data-row'));
+    tr.addEventListener('mouseenter', ()=> highlight(pinned===-1 ? i : pinned));
+    tr.addEventListener('mouseleave', ()=> highlight(pinned));
+    tr.addEventListener('click', ()=> pin(i));
+    tr.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); pin(i); }
+      if(e.key==='Escape'){ pinned=-1; highlight(pinned); }
+    });
+  });
+
+  // Initial paint
+  highlight(-1);
+}
+
+// ======= TOOLBAR =======
+function bindToolbar(){
+  document.getElementById('btnPrint').addEventListener('click', ()=>window.print());
+  document.getElementById('btnGlow').addEventListener('click', ()=>{ document.querySelectorAll('.card').forEach(c=>c.classList.toggle('glow')); });
+}
+
+// ======= INIT =======
+renderHealth();
+renderTimeline();
+renderDonut();
+bindToolbar();
+updateSparks();
+setInterval(updateSparks, REFRESH_MS);
+</script>
+</body>
+</html>
