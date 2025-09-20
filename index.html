@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MT5 Scalping Engine — Interactive Roadmap (Dark, v1.4.1)</title>
+<title>BOT Engine - (Dev)Roadmap  (Dark, v1.4.1)</title>
 <meta name="description" content="Dark, single-file, rich UI roadmap with live BTC/ETH sparklines, health gauges, clear 6-week timeline with progress, interactive effort split, and print-to-PDF export."/>
 <style>
   :root{
@@ -103,8 +103,8 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>MT5 Scalping Engine — Interactive Roadmap</h1>
-    <div class="sub">Exness Pro Tuned • BTCUSD • ETHUSD</div>
+    <h1>BOT Engine - (Dev)Roadmap </h1>
+    <div class="sub">Exness Pro Account Tuned • BTCUSD • ETHUSD • XAUUSD</div>
 
     <div class="toolbar">
       <div class="chip btn primary" id="btnPrint">Export PDF</div>
@@ -121,8 +121,8 @@
         <div class="gstack">
           <svg class="gauge" viewBox="0 0 120 120" id="gWin"></svg>
           <div>
-            <div class="gnum"><span id="winVal">68.2</span></div>
-            <div class="label">Win%: <span id="winLbl">68.2</span> • Threshold τ: <span id="tauLbl">58.0</span></div>
+            <div class="gnum"><span id="winVal">64.5</span></div>
+            <div class="label">Win%: <span id="winLbl">64.5</span> • Threshold τ: <span id="tauLbl">58.0</span></div>
           </div>
         </div>
       </div>
@@ -152,7 +152,7 @@
       <table>
         <thead><tr><th>Metric</th><th>Current</th><th>Target</th><th>Status</th></tr></thead>
         <tbody>
-          <tr><td>Win-rate</td><td id="tWinC">68.2%</td><td>58.0%</td><td class="status ok" id="tWinS">On track</td></tr>
+          <tr><td>Win-rate</td><td id="tWinC">64.5%</td><td>58.0%</td><td class="status ok" id="tWinS">On track</td></tr>
           <tr><td>Reject%</td><td id="tRejC">14.8%</td><td>≤20/≤15/≤30</td><td class="status ok" id="tRejS">Great</td></tr>
           <tr><td>Drawdown (R)</td><td id="tDDC">6.3</td><td>≤8</td><td class="status ok" id="tDDS">Safe</td></tr>
         </tbody>
@@ -162,7 +162,7 @@
     <!-- Live Market Sparklines + Timeline -->
     <div class="row cols-2" style="margin-top:16px">
       <div class="card">
-        <div class="kpi"><div class="badge b-ip"><span class="ico" style="background:#22c55e"></span> Live</div><div class="sp"></div><div class="tag">BTC/ETH via Binance (1m)</div></div>
+        <div class="kpi"><div class="badge b-ip"><span class="ico" style="background:#22c55e"></span> Live</div><div class="sp"></div><br></div>
         <div class="spark-row">
           <div>
             <div class="label">BTCUSD <span class="trend" id="btcTrend">Trend: —</span></div>
@@ -178,7 +178,7 @@
       </div>
 
       <div class="card">
-        <div class="gtitle">6-Week Roadmap — Clear Timeline</div>
+        <div class="gtitle">6-Week Roadmap — Timeline</div>
         <div class="timeline" id="timeline"></div>
       </div>
     </div>
@@ -219,7 +219,7 @@
         <svg class="donut" viewBox="0 0 120 120" id="donut" aria-label="Effort distribution donut"></svg>
         <div>
           <table class="legend" id="legend" aria-label="Effort distribution legend"></table>
-          <div class="info">Owners & % are editable in code constants; totals must sum to 100%.</div>
+         
         </div>
       </div>
     </div>
@@ -252,17 +252,17 @@
       </div>
     </div>
 
-    <div class="tag" style="margin-top:20px">© MT5 Scalping Engine — Dark interactive roadmap v1.4.1 • Aligned layout • Clear timeline with progress • Live BTC/ETH sparklines</div>
-  </div>
-
+    <div class="tag" style="margin-top:20px">Trading Bot RoadMap  •  Timeline with progress</div>
+  </div><div></div>
+  <br>
 <script>
 // ======= CONFIG (enhanced) =======
-const HEALTH = { win: 68.2, tau: 58.0, reject: 14.8, dd: 6.3, ddCap: 8.0 };
+const HEALTH = { win: 64.5, tau: 58.0, reject: 14.8, dd: 6.3, ddCap: 8.0 };
 const TIMELINE = [
   {w:1, title:'Plan & Foundations', status:'done', desc:'Scope lock, tests, draft manual.', progress:100},
   {w:2, title:'Learn from Data', status:'done', desc:'Backtests, τ thresholds, presets.', progress:100},
-  {w:3, title:'Connect & Simulate', status:'done', desc:'Orders, guardrails, broker parity.', progress:100},
-  {w:4, title:'Demo 24/5', status:'ip', desc:'Dashboards, alerts, drift checks.', progress:65},
+  {w:3, title:'Connect & Simulate', status:'ip', desc:'Orders, guardrails, broker parity.', progress:50},
+  {w:4, title:'Demo 24/5', status:'ip', desc:'Dashboards, alerts, drift checks.', progress:45},
   {w:5, title:'Canary Live', status:'queued', desc:'BTC tiny risk, rollback hooks.', progress:0},
   {w:6, title:'Ramp & Release', status:'queued', desc:'Add ETH, freeze v1.0, release runbook.', progress:0},
 ];
